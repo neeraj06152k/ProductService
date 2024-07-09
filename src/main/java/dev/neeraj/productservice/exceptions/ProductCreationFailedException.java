@@ -1,8 +1,8 @@
 package dev.neeraj.productservice.exceptions;
 
-public class ProductNotFoundException extends Exception{
+public class ProductCreationFailedException extends Exception{
 
-    public ProductNotFoundException(String msg){
+    public ProductCreationFailedException(String msg){
         super(msg);
     }
 }

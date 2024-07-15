@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @RestController
 public class ProductController {
 
-    @Qualifier("fakeStoreProductService")
+    @Qualifier("realProductService")
     @Autowired
     ProductService productService;
 

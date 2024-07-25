@@ -8,6 +8,7 @@ import dev.neeraj.productservice.models.Category;
 import dev.neeraj.productservice.models.Product;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -21,13 +22,22 @@ public class FakeStoreProductService implements ProductService{
 
     @Autowired
     private RestTemplate restTemplate;
+    @Autowired
+    private RedisTemplate redisTemplate;
 
-    public FakeStoreProductService(RestTemplate template){
-        restTemplate=template;
+    @Autowired
+    public FakeStoreProductService(RestTemplate restTemplate){
+        this.restTemplate=restTemplate;
     }
 
     @Override
     public Product getProduct(long id) throws ProductNotFoundException {
+
+        Product cachedProduct = (Product) redisTemplate.opsForHash().get("product", "PRODUCT_" + id);
+
+        if(cachedProduct!=null){
+            return cachedProduct;
+        }
 
         ReceivedProductDTO receivedProductDTO = restTemplate.getForObject(
                 "https://fakestoreapi.com/products/" + id,
@@ -41,11 +51,21 @@ public class FakeStoreProductService implements ProductService{
                     + " not found"
             );
 
-        return receivedProductDTO.convertToProduct();
+        Product product = receivedProductDTO.convertToProduct();
+        redisTemplate.opsForHash().put("product", "PRODUCT_" + id, product);
+        return product;
     }
 
     @Override
     public List<Product> getAllProducts() throws ProductNotFoundException {
+
+        List<Product> cachedProducts =
+                (List<Product>) redisTemplate.opsForHash().get("product", "ALL_PRODUCTS");
+
+        if(cachedProducts!=null){
+            return cachedProducts;
+        }
+
         ReceivedProductDTO[] arrayReceivedProductDTO = restTemplate.getForObject(
                 "https://fakestoreapi.com/products",
                 ReceivedProductDTO[].class
@@ -57,9 +77,12 @@ public class FakeStoreProductService implements ProductService{
             );
         }
 
-        return Arrays.stream(arrayReceivedProductDTO)
+        List<Product> products =  Arrays.stream(arrayReceivedProductDTO)
                 .map(ReceivedProductDTO::convertToProduct)
                 .collect(Collectors.toList());
+
+        redisTemplate.opsForHash().put("product", "ALL_PRODUCTS", products);
+        return products;
     }
 
     @Override

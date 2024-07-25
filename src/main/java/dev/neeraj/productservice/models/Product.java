@@ -10,11 +10,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 @Setter
 @Getter
 @NoArgsConstructor
 @Entity
-public class Product extends BaseModel{
+public class Product extends BaseModel implements Serializable {
     private double price;
     private String title;
     @Column(length = 1024)

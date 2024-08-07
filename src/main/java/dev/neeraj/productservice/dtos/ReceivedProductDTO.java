@@ -10,18 +10,21 @@ import lombok.Setter;
 public class ReceivedProductDTO {
     private long id;
     private double price;
+    private int quantity;
     private String title;
     private String description;
     private String image;
     private String category;
 
-    public Product convertToProduct(){
+    public Product toProduct(){
         Product product = new Product();
         product.setId(id);
         product.setPrice(price);
         product.setTitle(title);
-        product.setDescription(description);
         product.setImageURL(image);
+        product.setQuantity(quantity);
+        product.setDescription(description);
+
         Category category = new Category();
         category.setName(this.category);
         product.setCategory(category);

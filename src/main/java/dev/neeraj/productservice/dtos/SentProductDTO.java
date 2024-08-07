@@ -9,16 +9,18 @@ import lombok.Setter;
 public class SentProductDTO {
     private long id;
     private double price;
+    private int quantity;
     private String title;
     private String description;
     private String image;
     private String category;
 
-    public static SentProductDTO convertProductToSentProductDTO(Product product){
+    public static SentProductDTO toSentProductDTO(Product product){
         SentProductDTO sentProductDTO = new SentProductDTO();
         sentProductDTO.setId(product.getId());
         sentProductDTO.setTitle(product.getTitle());
         sentProductDTO.setPrice(product.getPrice());
+        sentProductDTO.setQuantity(product.getQuantity());
         sentProductDTO.setCategory(product.getCategory().getName());
         sentProductDTO.setDescription(product.getDescription());
         sentProductDTO.setImage(product.getImageURL());

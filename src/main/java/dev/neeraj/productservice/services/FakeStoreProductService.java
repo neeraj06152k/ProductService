@@ -26,8 +26,9 @@ public class FakeStoreProductService implements ProductService{
     private RedisTemplate redisTemplate;
 
     @Autowired
-    public FakeStoreProductService(RestTemplate restTemplate){
+    public FakeStoreProductService(RestTemplate restTemplate, RedisTemplate redisTemplate){
         this.restTemplate=restTemplate;
+        this.redisTemplate=redisTemplate;
     }
 
     @Override
@@ -51,7 +52,7 @@ public class FakeStoreProductService implements ProductService{
                     + " not found"
             );
 
-        Product product = receivedProductDTO.convertToProduct();
+        Product product = receivedProductDTO.toProduct();
         redisTemplate.opsForHash().put("product", "PRODUCT_" + id, product);
         return product;
     }
@@ -78,7 +79,7 @@ public class FakeStoreProductService implements ProductService{
         }
 
         List<Product> products =  Arrays.stream(arrayReceivedProductDTO)
-                .map(ReceivedProductDTO::convertToProduct)
+                .map(ReceivedProductDTO::toProduct)
                 .collect(Collectors.toList());
 
         redisTemplate.opsForHash().put("product", "ALL_PRODUCTS", products);
@@ -94,7 +95,7 @@ public class FakeStoreProductService implements ProductService{
 
         ReceivedProductDTO receivedProductDTO = restTemplate.postForObject(
                 "https://fakestoreapi.com/products/",
-                SentProductDTO.convertProductToSentProductDTO(product),
+                SentProductDTO.toSentProductDTO(product),
                 ReceivedProductDTO.class
         );
 
@@ -103,7 +104,7 @@ public class FakeStoreProductService implements ProductService{
                     "Unable to create new Product"
             );
 
-        return receivedProductDTO.convertToProduct();
+        return receivedProductDTO.toProduct();
     }
 
     @Override
@@ -133,6 +134,6 @@ public class FakeStoreProductService implements ProductService{
             throw new ProductNotFoundException("No products in FakeStore");
         }
 
-        return Arrays.stream(receivedProductDTOs).map(ReceivedProductDTO::convertToProduct).toList();
+        return Arrays.stream(receivedProductDTOs).map(ReceivedProductDTO::toProduct).toList();
     }
 }

@@ -1,5 +1,6 @@
 package dev.neeraj.productservice.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ser.Serializers;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -15,13 +16,17 @@ import java.io.Serializable;
 @Setter
 @Getter
 @NoArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
 public class Product extends BaseModel implements Serializable {
     private double price;
     private String title;
+
     @Column(length = 1024)
     private String description;
     private String imageURL;
+    private int quantity;
+
     @ManyToOne(cascade = CascadeType.PERSIST)
     private Category category;
 }

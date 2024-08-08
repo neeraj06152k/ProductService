@@ -1,6 +1,7 @@
 package dev.neeraj.productservice.controllers;
 
 import dev.neeraj.productservice.dtos.ReceivedCartItemDTO;
+import dev.neeraj.productservice.dtos.ReceivedProductDTO;
 import dev.neeraj.productservice.dtos.ReceivedUserDTO;
 import dev.neeraj.productservice.models.CartItem;
 import dev.neeraj.productservice.models.Product;
@@ -12,8 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/cart")
@@ -53,10 +54,21 @@ public class CartController {
         }
     }
 
-    @PostMapping("/getCartItems")
-    public ResponseEntity<CartItem[]> getCartItems(@RequestBody ReceivedUserDTO userDTO) {
+    @PostMapping("/getInCartProducts")
+    public ResponseEntity<ReceivedProductDTO[]> getInCartProducts(@RequestBody ReceivedUserDTO userDTO) {
         List<CartItem> cartItems = cartRepository.findAllByUserId(userDTO.getUserId());
-
-        return ResponseEntity.ok(cartItems.toArray(new CartItem[0]));
+        List<ReceivedProductDTO> cartProducts = new ArrayList<>();
+        for (CartItem cartItem : cartItems) {
+            ReceivedProductDTO productDTO = new ReceivedProductDTO();
+            productDTO.setId(cartItem.getProduct().getId());
+            productDTO.setTitle(cartItem.getProduct().getTitle());
+            productDTO.setPrice(cartItem.getProduct().getPrice());
+            productDTO.setDescription(cartItem.getProduct().getDescription());
+            productDTO.setImage(cartItem.getProduct().getImageURL());
+            productDTO.setCategory(cartItem.getProduct().getCategory().getName());
+            productDTO.setQuantity(cartItem.getQuantity());
+            cartProducts.add(productDTO);
+        }
+        return ResponseEntity.ok(cartProducts.toArray(new ReceivedProductDTO[0]));
     }
 }

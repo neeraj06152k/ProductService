@@ -9,6 +9,7 @@ import dev.neeraj.productservice.models.Product;
 import dev.neeraj.productservice.services.FakeStoreProductService;
 import dev.neeraj.productservice.services.ProductService;
 import dev.neeraj.productservice.services.RealProductService;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -22,11 +23,11 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/product")
+@AllArgsConstructor
 public class ProductController {
 
-    @Qualifier("realProductService")
-    @Autowired
-    ProductService productService;
+    private final ProductService productService;
+
 
     @GetMapping("/{id}")
     public ResponseEntity<SentProductDTO> getProduct(@PathVariable long id) throws ProductNotFoundException {
@@ -70,44 +71,5 @@ public class ProductController {
         );
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<SentProductDTO> addProduct(@RequestBody ReceivedProductDTO receivedProductDTO)
-            throws ProductCreationFailedException, ProductNotFoundException {
-        Product product = receivedProductDTO.toProduct();
-        Product createdProduct = productService.addProduct(product);
-
-        return new ResponseEntity<>(SentProductDTO.toSentProductDTO(createdProduct), HttpStatus.OK);
-    }
-
-    @GetMapping("/resetRealDB")
-    public ResponseEntity<ListSentProductDTO> resetRealDB()
-            throws ProductNotFoundException, ProductCreationFailedException {
-        if(productService instanceof FakeStoreProductService) return ResponseEntity.ok(null);
-
-
-        FakeStoreProductService fakeStoreProductService = new FakeStoreProductService(
-                new RestTemplate(), ((RealProductService)productService).getRedisTemplate());
-
-
-        List<Product> allFakeStoreProducts = fakeStoreProductService.getAllProducts();
-
-        RealProductService realProductService = (RealProductService) productService;
-        realProductService.deleteAllProducts();
-
-        for(Product fakeProduct: allFakeStoreProducts){
-            fakeProduct.setQuantity(10);
-            productService.addProduct(fakeProduct);
-        }
-
-        List<Product> realDBProducts = productService.getAllProducts();
-        ListSentProductDTO listSentProductDTO = new ListSentProductDTO();
-        listSentProductDTO.setDtoList(
-                realDBProducts.stream()
-                        .map(SentProductDTO::toSentProductDTO)
-                        .toList()
-        );
-
-        return new ResponseEntity<>(listSentProductDTO, HttpStatus.OK);
-    }
 
 }

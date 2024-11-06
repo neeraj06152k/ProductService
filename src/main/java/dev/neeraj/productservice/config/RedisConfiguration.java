@@ -1,18 +1,27 @@
 package dev.neeraj.productservice.config;
 
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 
+import java.util.Objects;
+
 @Configuration
+@AllArgsConstructor
 public class RedisConfiguration {
-    private RedisTemplate redisTemplate;
+    private final Environment environment;
+
     @Bean
     JedisConnectionFactory jedisConnectionFactory() {
         RedisStandaloneConfiguration redisStandaloneConfiguration =
-                new RedisStandaloneConfiguration("localhost", 6379);
+                new RedisStandaloneConfiguration(
+                        Objects.requireNonNull(environment.getProperty("spring.redis.host")),
+                        Objects.requireNonNull(environment.getProperty("spring.redis.port", Integer.class))
+                );
 
         redisStandaloneConfiguration.setPassword("");
 
@@ -20,13 +29,9 @@ public class RedisConfiguration {
     }
 
     @Bean
-    public RedisTemplate redisTemplate() {
-        if(redisTemplate != null) {
-            return redisTemplate;
-        }
+    public RedisTemplate<String, Object> redisTemplate() {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(jedisConnectionFactory());
-        redisTemplate=template;
         return template;
     }
 

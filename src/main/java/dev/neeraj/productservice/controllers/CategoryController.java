@@ -17,9 +17,13 @@ import java.util.List;
 @RequestMapping("/category")
 public class CategoryController {
 
-    @Qualifier("realProductService")
-    @Autowired
-    ProductService productService;
+    private final ProductService productService;
+
+    public CategoryController(
+            @Qualifier("realProductService") ProductService productService
+    ) {
+        this.productService = productService;
+    }
 
     @GetMapping("")
     public ResponseEntity<ListCategoryDTO> getAllCategories() {

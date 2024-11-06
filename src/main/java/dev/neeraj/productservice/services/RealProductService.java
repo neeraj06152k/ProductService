@@ -8,38 +8,40 @@ import dev.neeraj.productservice.repositories.CategoryRepository;
 import dev.neeraj.productservice.repositories.ProductRepository;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Primary
 @Service
 @Getter
 public class RealProductService implements ProductService{
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
-    private final RedisTemplate redisTemplate;
+    private final CacheService cacheService;
 
     @Autowired
     public RealProductService(ProductRepository productRepository,
                               CategoryRepository categoryRepository,
-                              RedisTemplate redisTemplate){
+                              CacheService cacheService){
         this.productRepository=productRepository;
         this.categoryRepository=categoryRepository;
-        this.redisTemplate = redisTemplate;
+        this.cacheService = cacheService;
     }
 
     @Override
     public Product getProduct(long id) throws ProductNotFoundException {
-        Product cachedProduct = (Product) redisTemplate.opsForHash().get("product", "PRODUCT_" + id);
+        Product cachedProduct = (Product) cacheService.get("product", "PRODUCT_" + id).orElse(null);
 
         if(cachedProduct!=null){
             return cachedProduct;
         }
 
         Product product = getProductFromDB(id);
-        redisTemplate.opsForHash().put("product", "PRODUCT_" + id, product);
+        cacheService.put("product", "PRODUCT_" + id, product);
         return product;
     }
     public Product getProductFromDB(long id) throws ProductNotFoundException {
@@ -57,17 +59,16 @@ public class RealProductService implements ProductService{
 
     @Override
     public List<Product> getAllProducts() throws ProductNotFoundException {
-        Object cachedRedisResult =  redisTemplate.opsForHash().values("product");
-        List<Product> cachedProducts = new ArrayList<>();
-
-        if(!cachedProducts.isEmpty()){
-            cachedProducts.addAll((List<Product>) cachedRedisResult);
-            return cachedProducts;
+        List<Object> productList = cacheService.values("product");
+        if(!productList.isEmpty()){
+            return productList.stream()
+                    .map(product -> (Product) product)
+                    .toList();
         }
 
         List<Product> products = getAllProductsFromDB();
         for(Product product: products){
-            redisTemplate.opsForHash().put("product", "PRODUCT_" + product.getId(), product);
+            cacheService.put("product", "PRODUCT_" + product.getId(), product);
         }
         return products;
     }
@@ -102,9 +103,6 @@ public class RealProductService implements ProductService{
     public void deleteAllProducts(){
         productRepository.deleteAll();
         categoryRepository.deleteAll();
-        redisTemplate.opsForHash().delete("product",
-                redisTemplate.opsForHash().keys("product"));
-
-
+        cacheService.clear("product");
     }
 }

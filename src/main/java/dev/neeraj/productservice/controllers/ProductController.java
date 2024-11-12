@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/product")
+@RequestMapping("/products")
 @AllArgsConstructor
 public class ProductController {
 
@@ -30,7 +30,8 @@ public class ProductController {
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<SentProductDTO> getProduct(@PathVariable long id) throws ProductNotFoundException {
+    public ResponseEntity<SentProductDTO> getProduct(@PathVariable long id)
+            throws ProductNotFoundException {
 
         Product product = productService.getProduct(id);
 
@@ -56,8 +57,9 @@ public class ProductController {
     }
 
     @GetMapping("/limited")
-    public ResponseEntity<ListSentProductDTO> getLimitedProducts(@RequestParam(defaultValue = "10") int limit)
-            throws ProductNotFoundException {
+    public ResponseEntity<ListSentProductDTO> getLimitedProducts(
+            @RequestParam(defaultValue = "10") int limit
+    ) throws ProductNotFoundException {
         List<Product> products = productService.getLimitedProducts(limit);
 
         ListSentProductDTO listSentProductDTO = new ListSentProductDTO();

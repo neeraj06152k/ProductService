@@ -13,16 +13,14 @@ import dev.neeraj.productservice.services.CacheService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
 @RestController
 @AllArgsConstructor
+@RequestMapping("/admin")
 public class AdminController {
     private final ProductService productService;
     private final RestTemplate restTemplate;

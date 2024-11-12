@@ -18,10 +18,7 @@ public class RedisConfiguration {
     @Bean
     JedisConnectionFactory jedisConnectionFactory() {
         RedisStandaloneConfiguration redisStandaloneConfiguration =
-                new RedisStandaloneConfiguration(
-                        Objects.requireNonNull(environment.getProperty("spring.redis.host")),
-                        Objects.requireNonNull(environment.getProperty("spring.redis.port", Integer.class))
-                );
+                new RedisStandaloneConfiguration();
 
         redisStandaloneConfiguration.setPassword("");
 
